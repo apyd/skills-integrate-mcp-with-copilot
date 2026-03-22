@@ -1,0 +1,12 @@
+{
+  "teachers": [
+    {
+      "username": "mrivera",
+      "password": "CHANGE_ME_SECURELY_IN_LOCAL_CONFIG"
+    },
+    {
+      "username": "jsmith",
+      "password": "CHANGE_ME_SECURELY_IN_LOCAL_CONFIG"
+    }
+  ]
+}
