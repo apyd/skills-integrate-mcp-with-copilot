@@ -8,8 +8,10 @@ for extracurricular activities at Mergington High School.
 import json
 import os
 import secrets
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import jwt
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -23,6 +25,13 @@ current_dir = Path(__file__).parent
 teachers_file = current_dir / "teachers.json"
 app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
           "static")), name="static")
+
+# Secret key for signing JWT tokens — generated once per process.
+# In a multi-worker deployment this should come from an environment variable
+# so all workers share the same secret.
+JWT_SECRET = os.environ.get("JWT_SECRET", secrets.token_hex(32))
+JWT_ALGORITHM = "HS256"
+SESSION_TTL_HOURS = 8
 
 
 class LoginRequest(BaseModel):
@@ -41,7 +50,6 @@ def load_teachers():
 
 
 teachers = load_teachers()
-teacher_sessions = {}
 
 # In-memory activity database
 activities = {
@@ -102,9 +110,19 @@ activities = {
 }
 
 
+def _decode_session(token: str | None) -> str | None:
+    """Return the username from a valid, unexpired JWT session token, or None."""
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload.get("sub")
+    except jwt.PyJWTError:
+        return None
+
+
 def require_teacher(request: Request):
-    session_token = request.cookies.get("teacher_session")
-    username = teacher_sessions.get(session_token)
+    username = _decode_session(request.cookies.get("teacher_session"))
 
     if not username:
         raise HTTPException(status_code=403, detail="Teacher login required")
@@ -124,8 +142,7 @@ def get_activities():
 
 @app.get("/auth/session")
 def get_session(request: Request):
-    session_token = request.cookies.get("teacher_session")
-    username = teacher_sessions.get(session_token)
+    username = _decode_session(request.cookies.get("teacher_session"))
 
     if not username:
         return {"authenticated": False}
@@ -140,8 +157,12 @@ def login_teacher(payload: LoginRequest):
     if expected_password != payload.password:
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
-    session_token = secrets.token_urlsafe(32)
-    teacher_sessions[session_token] = payload.username
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=SESSION_TTL_HOURS)
+    token = jwt.encode(
+        {"sub": payload.username, "exp": expires_at},
+        JWT_SECRET,
+        algorithm=JWT_ALGORITHM,
+    )
 
     response = JSONResponse({
         "message": f"Logged in as {payload.username}",
@@ -149,7 +170,7 @@ def login_teacher(payload: LoginRequest):
     })
     response.set_cookie(
         key="teacher_session",
-        value=session_token,
+        value=token,
         httponly=True,
         samesite="lax",
     )
@@ -158,11 +179,6 @@ def login_teacher(payload: LoginRequest):
 
 @app.post("/auth/logout")
 def logout_teacher(request: Request):
-    session_token = request.cookies.get("teacher_session")
-
-    if session_token:
-        teacher_sessions.pop(session_token, None)
-
     response = JSONResponse({"message": "Logged out"})
     response.delete_cookie("teacher_session")
     return response
