@@ -2,11 +2,11 @@
   "teachers": [
     {
       "username": "mrivera",
-      "password": "mergington-admin-2026"
+      "password": "CHANGE_ME_SECURELY_IN_LOCAL_CONFIG"
     },
     {
       "username": "jsmith",
-      "password": "activity-roster-2026"
+      "password": "CHANGE_ME_SECURELY_IN_LOCAL_CONFIG"
     }
   ]
 }
