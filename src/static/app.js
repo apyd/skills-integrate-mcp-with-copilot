@@ -169,6 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         if (response.status === 403) {
           await refreshSession();
+          fetchActivities();
         }
         showMessage(result.detail || "An error occurred", "error");
       }
@@ -206,6 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         if (response.status === 403) {
           await refreshSession();
+          fetchActivities();
         }
         showMessage(result.detail || "An error occurred", "error");
       }
