@@ -8,8 +8,30 @@
   </head>
   <body>
     <header>
-      <h1>Mergington High School</h1>
-      <h2>Extracurricular Activities</h2>
+      <div class="header-bar">
+        <div>
+          <h1>Mergington High School</h1>
+          <h2>Extracurricular Activities</h2>
+        </div>
+        <div class="account-menu">
+          <button
+            id="account-toggle"
+            class="icon-button"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="account-panel"
+            aria-label="Account options"
+          >
+            <span aria-hidden="true">👤</span>
+          </button>
+          <div id="account-panel" class="account-panel hidden">
+            <p id="account-status">Viewing as student</p>
+            <button id="login-trigger" type="button">Log In</button>
+            <button id="logout-trigger" type="button" class="secondary-action hidden">Log Out</button>
+          </div>
+        </div>
+      </div>
     </header>
 
     <main>
@@ -22,7 +44,10 @@
       </section>
 
       <section id="signup-container">
-        <h3>Sign Up for an Activity</h3>
+        <h3>Teacher Registration Controls</h3>
+        <p id="teacher-helper" class="info-panel">
+          Students can view activity rosters. Teachers must log in to register or remove students.
+        </p>
         <form id="signup-form">
           <div class="form-group">
             <label for="email">Student Email:</label>
@@ -40,6 +65,26 @@
         <div id="message" class="hidden"></div>
       </section>
     </main>
+
+    <div id="login-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="login-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="login-title">Teacher Login</h3>
+          <button id="close-login-modal" type="button" class="icon-button" aria-label="Close login dialog">✕</button>
+        </div>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" required autocomplete="username" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" required autocomplete="current-password" />
+          </div>
+          <button type="submit">Log In</button>
+        </form>
+      </div>
+    </div>
 
     <footer>
       <p>&copy; 2026 Mergington High School</p>
