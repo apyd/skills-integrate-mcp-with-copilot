@@ -206,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         if (response.status === 403) {
           await refreshSession();
+          await fetchActivities();
         }
         showMessage(result.detail || "An error occurred", "error");
       }
